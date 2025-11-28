@@ -1,0 +1,5 @@
+{
+  "name": "CV Forge AI",
+  "description": "An intelligent CV generator that creates tailored, professional resumes based on your job role using Gemini AI. Choose from modern templates and distinct color themes.",
+  "requestFramePermissions": []
+}
