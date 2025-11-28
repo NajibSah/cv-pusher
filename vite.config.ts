@@ -7,8 +7,10 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
     define: {
-      // This ensures process.env.API_KEY works in the client-side code
-      'process.env.API_KEY': JSON.stringify(env.API_KEY)
+      // ⚠️ SECURITY WARNING: Hardcoding your API key is risky if you commit this file to GitHub.
+      // For Vercel deployment, it is better to use Environment Variables in the Vercel Dashboard.
+      // However, to put it directly here as requested, replace the string below with your actual key:
+      'process.env.API_KEY': JSON.stringify("AIzaSyAgbE5fl8TcaFD6kmsLzNdbrZj8fpbBoyE") 
     }
   }
 })
