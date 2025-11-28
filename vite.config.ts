@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => {
       // ⚠️ SECURITY WARNING: Hardcoding your API key is risky if you commit this file to GitHub.
       // For Vercel deployment, it is better to use Environment Variables in the Vercel Dashboard.
       // However, to put it directly here as requested, replace the string below with your actual key:
-      'process.env.API_KEY': JSON.stringify("AIzaSyAgbE5fl8TcaFD6kmsLzNdbrZj8fpbBoyE") 
+      'process.env.API_KEY': JSON.stringify("") 
     }
   }
 })
