@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { CVData, ExperienceItem, EducationItem, SkillItem } from '../types';
-import { Sparkles, Trash2, Plus, ChevronDown, ChevronUp, Upload, X } from 'lucide-react';
+import { CVData, ExperienceItem, EducationItem, SkillItem, CustomSectionItem } from '../types';
+import { Sparkles, Trash2, Plus, ChevronDown, ChevronUp, Upload, X, Mail, Phone, MapPin, Globe, PenTool } from 'lucide-react';
 import { improveTextSection } from '../services/geminiService';
 
 interface CVEditorProps {
@@ -10,7 +10,7 @@ interface CVEditorProps {
 }
 
 const CVEditor: React.FC<CVEditorProps> = ({ data, onChange, jobRole }) => {
-  const [activeSection, setActiveSection] = useState<string | null>('personal');
+  const [activeSection, setActiveSection] = useState<string | null>('profile');
   const [loadingAI, setLoadingAI] = useState<string | null>(null);
 
   const toggleSection = (section: string) => {
@@ -48,6 +48,12 @@ const CVEditor: React.FC<CVEditorProps> = ({ data, onChange, jobRole }) => {
     handleInputChange('education', newEdu);
   };
 
+  const handleCustomSectionChange = (index: number, field: keyof CustomSectionItem, value: string) => {
+    const newSec = [...(data.customSections || [])];
+    newSec[index] = { ...newSec[index], [field]: value };
+    handleInputChange('customSections', newSec);
+  };
+
   const addExperience = () => {
     const newExp: ExperienceItem = {
       id: `exp-${Date.now()}`,
@@ -79,6 +85,20 @@ const CVEditor: React.FC<CVEditorProps> = ({ data, onChange, jobRole }) => {
   const removeEducation = (index: number) => {
     const newEdu = data.education.filter((_, i) => i !== index);
     handleInputChange('education', newEdu);
+  };
+
+  const addCustomSection = () => {
+    const newSec: CustomSectionItem = {
+      id: `custom-${Date.now()}`,
+      title: 'New Section',
+      content: '',
+    };
+    handleInputChange('customSections', [...(data.customSections || []), newSec]);
+  };
+
+  const removeCustomSection = (index: number) => {
+    const newSec = (data.customSections || []).filter((_, i) => i !== index);
+    handleInputChange('customSections', newSec);
   };
 
   const handleSkillsChange = (text: string) => {
@@ -120,12 +140,47 @@ const CVEditor: React.FC<CVEditorProps> = ({ data, onChange, jobRole }) => {
     </button>
   );
 
+  const ContactInput = ({ 
+    label, 
+    value, 
+    field, 
+    icon: Icon 
+  }: { 
+    label: string, 
+    value: string, 
+    field: keyof CVData, 
+    icon: React.ElementType 
+  }) => (
+    <div className="space-y-1">
+      <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide flex items-center gap-1">
+        <Icon size={10} /> {label}
+      </label>
+      <div className="relative">
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => handleInputChange(field, e.target.value)}
+          className="w-full p-2 pr-8 border border-slate-300 dark:border-slate-600 rounded text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
+          placeholder={`Enter ${label.toLowerCase()}`}
+        />
+        {value && (
+          <button 
+            onClick={() => handleInputChange(field, '')}
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+          >
+            <X size={14} />
+          </button>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <div className="space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto pr-2 pb-20 custom-scrollbar">
-      {/* Personal Details */}
+      {/* Profile Section */}
       <div>
-        <SectionHeader title="Personal Details" id="personal" />
-        {activeSection === 'personal' && (
+        <SectionHeader title="Profile" id="profile" />
+        {activeSection === 'profile' && (
           <div className="p-4 bg-white dark:bg-slate-800 border border-t-0 border-slate-200 dark:border-slate-700 rounded-b-lg -mt-2 space-y-4 animate-fadeIn">
             
             {/* Photo Upload */}
@@ -153,59 +208,19 @@ const CVEditor: React.FC<CVEditorProps> = ({ data, onChange, jobRole }) => {
                </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Full Name</label>
-                <input
-                  type="text"
-                  value={data.fullName}
-                  onChange={(e) => handleInputChange('fullName', e.target.value)}
-                  className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
-                  placeholder="John Doe"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Email</label>
-                <input
-                  type="email"
-                  value={data.email}
-                  onChange={(e) => handleInputChange('email', e.target.value)}
-                  className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
-                  placeholder="john@example.com"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Phone</label>
-                <input
-                  type="text"
-                  value={data.phone}
-                  onChange={(e) => handleInputChange('phone', e.target.value)}
-                  className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
-                  placeholder="(555) 123-4567"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Location</label>
-                <input
-                  type="text"
-                  value={data.location}
-                  onChange={(e) => handleInputChange('location', e.target.value)}
-                  className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
-                  placeholder="City, State"
-                />
-              </div>
-              <div className="col-span-2 space-y-1">
-                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Website/LinkedIn</label>
-                <input
-                  type="text"
-                  value={data.website}
-                  onChange={(e) => handleInputChange('website', e.target.value)}
-                  className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
-                  placeholder="linkedin.com/in/johndoe"
-                />
-              </div>
+            {/* Name */}
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Full Name</label>
+              <input
+                type="text"
+                value={data.fullName}
+                onChange={(e) => handleInputChange('fullName', e.target.value)}
+                className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
+                placeholder="John Doe"
+              />
             </div>
             
+            {/* Summary */}
             <div className="space-y-1 relative">
               <div className="flex justify-between items-center">
                 <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Professional Summary</label>
@@ -226,6 +241,19 @@ const CVEditor: React.FC<CVEditorProps> = ({ data, onChange, jobRole }) => {
               />
             </div>
           </div>
+        )}
+      </div>
+
+      {/* Contact Details */}
+      <div>
+        <SectionHeader title="Contact Details" id="contact" />
+        {activeSection === 'contact' && (
+           <div className="p-4 bg-white dark:bg-slate-800 border border-t-0 border-slate-200 dark:border-slate-700 rounded-b-lg -mt-2 grid grid-cols-1 gap-4 animate-fadeIn">
+              <ContactInput label="Email" value={data.email} field="email" icon={Mail} />
+              <ContactInput label="Phone" value={data.phone} field="phone" icon={Phone} />
+              <ContactInput label="Location" value={data.location} field="location" icon={MapPin} />
+              <ContactInput label="Website / Link" value={data.website} field="website" icon={Globe} />
+           </div>
         )}
       </div>
 
@@ -394,6 +422,57 @@ const CVEditor: React.FC<CVEditorProps> = ({ data, onChange, jobRole }) => {
            </div>
         )}
       </div>
+
+      {/* Custom Sections (For Extra Pages) */}
+      <div>
+        <SectionHeader title="Custom Sections (Add Pages)" id="custom" icon={<PenTool size={16} />} />
+        {activeSection === 'custom' && (
+          <div className="p-4 bg-white dark:bg-slate-800 border border-t-0 border-slate-200 dark:border-slate-700 rounded-b-lg -mt-2 space-y-6 animate-fadeIn">
+            <p className="text-xs text-slate-500 mb-2">
+              Add new sections to your CV. If the first page is full, these will naturally flow to the next page.
+            </p>
+            {(data.customSections || []).map((sec, index) => (
+              <div key={sec.id} className="relative pb-6 border-b border-slate-100 dark:border-slate-700 last:border-0 last:pb-0">
+                <button 
+                  onClick={() => removeCustomSection(index)}
+                  className="absolute right-0 top-0 text-slate-400 hover:text-red-500 transition-colors"
+                >
+                  <Trash2 size={16} />
+                </button>
+                <div className="space-y-4">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Section Title</label>
+                    <input
+                      type="text"
+                      value={sec.title}
+                      onChange={(e) => handleCustomSectionChange(index, 'title', e.target.value)}
+                      className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
+                      placeholder="e.g., Languages, Certifications"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Content</label>
+                    <textarea
+                      value={sec.content}
+                      onChange={(e) => handleCustomSectionChange(index, 'content', e.target.value)}
+                      rows={4}
+                      className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white dark:bg-slate-900 text-slate-900 dark:text-white resize-none"
+                      placeholder="Enter text or bullet points..."
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+            <button
+              onClick={addCustomSection}
+              className="w-full py-2 border-2 border-dashed border-slate-200 dark:border-slate-600 rounded-lg text-slate-500 dark:text-slate-400 hover:border-indigo-500 hover:text-indigo-500 dark:hover:border-indigo-400 dark:hover:text-indigo-400 font-medium text-sm transition-all flex items-center justify-center gap-2"
+            >
+              <Plus size={16} /> Add Custom Section
+            </button>
+          </div>
+        )}
+      </div>
+
     </div>
   );
 };

@@ -11,7 +11,7 @@ export default defineConfig(({ mode }) => {
     define: {
       // This exposes process.env.API_KEY to the client-side code
       // It will pull from your Vercel Environment Variables or local .env file
-      'process.env.API_KEY': JSON.stringify(env.API_KEY) 
+      'process.env.API_KEY': JSON.stringify(env.API_KEY || '') 
     }
   }
 })

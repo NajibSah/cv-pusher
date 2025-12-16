@@ -9,7 +9,7 @@ const cvSchema: Schema = {
   type: Type.OBJECT,
   properties: {
     fullName: { type: Type.STRING, description: "A realistic full name." },
-    summary: { type: Type.STRING, description: "Extremely concise (max 2 sentences) professional summary." },
+    summary: { type: Type.STRING, description: "A punchy, professional summary (approx 3-4 sentences) that fits perfectly at the top of a page." },
     experience: {
       type: Type.ARRAY,
       items: {
@@ -19,7 +19,7 @@ const cvSchema: Schema = {
           role: { type: Type.STRING },
           startDate: { type: Type.STRING },
           endDate: { type: Type.STRING },
-          description: { type: Type.STRING, description: "Max 2-3 short, punchy bullet points." },
+          description: { type: Type.STRING, description: "3-4 concise but impactful bullet points. Focus on results to keep it dense but readable." },
         },
         required: ["company", "role", "startDate", "endDate", "description"],
       },
@@ -59,22 +59,32 @@ export const generateCVDraft = async (jobRole: string): Promise<Partial<CVData>>
       contents: `You are an expert professional resume writer. Generate a resume for a "${jobRole}".
       
       RULES FOR CONTENT:
-      1. **TONE**: Write as a HUMAN candidate. Do not use AI meta-commentary. Do not say "Here is a summary".
-      2. **BREVITY**: The resume MUST fit on one page. 
-         - Summary: Max 25 words.
-         - Job Descriptions: Max 2-3 bullet points per role. Each bullet max 10 words.
-      3. **REALISM**: Use realistic, impressive metrics (e.g., "Increased sales by 20%").
-      4. **FORMAT**: Do not use markdown headers in the description fields, just the bullet points.
+      1. **GOAL**: The content must fit PERFECTLY on a single A4 page. 
+         - Not too short (no blank space at bottom).
+         - Not too long (do not spill to page 2).
+      2. **TONE**: Write as a HUMAN candidate. Professional, confident, and articulate.
+      3. **DETAILS**:
+         - Summary: 3-4 sentences.
+         - Experience: Provide exactly 3 roles. Each role should have 3-4 bullet points.
+         - Education: 1-2 items.
+         - Skills: 6-8 relevant skills.
+      4. **REALISM**: Use realistic numbers (e.g., "Managed budget of $50k", "Improved efficiency by 15%").
+      5. **FORMAT**: Return clean JSON.
       `,
       config: {
         responseMimeType: "application/json",
         responseSchema: cvSchema,
-        temperature: 0.4, // Lower temperature for more focused/concise output
+        temperature: 0.4, 
       },
     });
 
     if (response.text) {
-      return JSON.parse(response.text) as Partial<CVData>;
+      let text = response.text.trim();
+      // Remove Markdown code block formatting if present
+      if (text.startsWith("```")) {
+        text = text.replace(/^```(json)?/, "").replace(/```$/, "");
+      }
+      return JSON.parse(text) as Partial<CVData>;
     }
     return {};
   } catch (error) {
@@ -92,10 +102,10 @@ export const improveTextSection = async (currentText: string, sectionType: strin
       Original Text: "${currentText}"
       
       RULES:
-      1. Make it professional, human, and active voice.
-      2. **EXTREMELY CONCISE**: Reduce the word count by 30% to ensure it fits on the page. Max 2 sentences total.
+      1. Make it professional, impressive, and flow naturally.
+      2. **LENGTH**: Keep it concise (approx 30 words) to ensure it stays on one page.
       3. NO AI EXPLANATIONS. Return ONLY the rewritten text.
-      4. Remove any "AI" placeholders like "[Insert metric]". Use realistic placeholders if needed.
+      4. Focus on strong action verbs and professional vocabulary.
       `,
     });
     

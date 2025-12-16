@@ -45,9 +45,9 @@ const App: React.FC = () => {
       setCvData(prev => ({ ...prev, ...draft }));
       setIsStarted(true);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to generate CV", error);
-      alert("AI Generation failed. Please try again or check your connection.");
+      alert(`AI Generation failed: ${error.message || "Unknown error"}. Check console for details.`);
     } finally {
       setIsGenerating(false);
     }
