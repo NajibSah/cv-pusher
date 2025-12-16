@@ -1,9 +1,6 @@
 import { GoogleGenAI, Type, Schema } from "@google/genai";
 import { CVData } from "../types";
 
-// Initialize Gemini Client
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-
 // Schema for CV Data generation
 const cvSchema: Schema = {
   type: Type.OBJECT,
@@ -52,8 +49,17 @@ const cvSchema: Schema = {
   required: ["fullName", "summary", "experience", "education", "skills"],
 };
 
+const getAIClient = () => {
+  const apiKey = process.env.API_KEY;
+  if (!apiKey) {
+    throw new Error("API_KEY is missing. Please add it to your environment variables.");
+  }
+  return new GoogleGenAI({ apiKey });
+};
+
 export const generateCVDraft = async (jobRole: string): Promise<Partial<CVData>> => {
   try {
+    const ai = getAIClient();
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
       contents: `You are an expert professional resume writer. Generate a resume for a "${jobRole}".
@@ -95,6 +101,7 @@ export const generateCVDraft = async (jobRole: string): Promise<Partial<CVData>>
 
 export const improveTextSection = async (currentText: string, sectionType: string, jobRole: string): Promise<string> => {
   try {
+    const ai = getAIClient();
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
       contents: `Rewrite the following "${sectionType}" text for a ${jobRole} resume.
