@@ -52,7 +52,7 @@ const cvSchema: Schema = {
 const getAIClient = () => {
   const apiKey = process.env.API_KEY;
   if (!apiKey) {
-    throw new Error("API_KEY is missing. Please add it to your environment variables.");
+    throw new Error("API_KEY is missing. Check your Vercel Environment Variables settings and ensure the variable is named 'API_KEY'. You may need to redeploy after adding it.");
   }
   return new GoogleGenAI({ apiKey });
 };
